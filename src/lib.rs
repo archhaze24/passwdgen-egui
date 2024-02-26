@@ -12,8 +12,8 @@ pub struct PasswdgenRequest {
     remove_similar: bool,
 }
 
-impl PasswdgenRequest {
-    pub fn default() -> PasswdgenRequest {
+impl Default for PasswdgenRequest {
+    fn default() -> PasswdgenRequest {
         PasswdgenRequest {
             length: 16,
             remove_uppercase: false,
@@ -23,6 +23,9 @@ impl PasswdgenRequest {
             remove_similar: true,
         }
     }
+}
+
+impl PasswdgenRequest {
     pub fn new(
         length: u32,
         remove_uppercase: bool,

@@ -1,9 +1,11 @@
 # passwdgen-egui
 
-A pretty simple tool for password generation, written in Rust. GUI version.
+A pretty simple tool for password generation, written in Rust. GUI/Web version.
 
 ## Usage:
-Download an exe for your platform from [releases page](https://github.com/archhaze24/passwdgen-egui/releases/latest) and launch it. 
+Web version is available here: https://archhaze24.github.io/passwdgen-egui/
+
+If you want to run it locally, download an exe for your platform from [releases page](https://github.com/archhaze24/passwdgen-egui/releases/latest) and launch it. 
 Interface is pretty self-explanatory :)
 
 ## Building from source:
