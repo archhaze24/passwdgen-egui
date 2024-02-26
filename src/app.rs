@@ -1,109 +1,84 @@
-/// We derive Deserialize/Serialize so we can persist app state on shutdown.
-#[derive(serde::Deserialize, serde::Serialize)]
-#[serde(default)] // if we add new fields, give them default values when deserializing old state
-pub struct TemplateApp {
-    // Example stuff:
-    label: String,
+use egui::{RichText, Vec2};
 
-    #[serde(skip)] // This how you opt-out of serialization of a field
-    value: f32,
+use crate::{generate_passsword, PasswdgenRequest};
+/// We derive Deserialize/Serialize so we can persist app state on shutdown.
+// #[derive(serde::Deserialize, serde::Serialize)]
+// #[serde(default)] // if we add new fields, give them default values when deserializing old state
+pub struct PasswdgenEgui {
+    length: u32,
+    remove_uppercase: bool,
+    remove_lowercase: bool,
+    remove_numbers: bool,
+    add_special_characters: bool,
+    remove_similar: bool,
+    password: String,
 }
 
-impl Default for TemplateApp {
+impl Default for PasswdgenEgui {
     fn default() -> Self {
         Self {
-            // Example stuff:
-            label: "Hello World!".to_owned(),
-            value: 2.7,
+            length: 16,
+            remove_uppercase: false,
+            remove_lowercase: false,
+            remove_numbers: false,
+            add_special_characters: true,
+            remove_similar: true,
+            password: generate_passsword(PasswdgenRequest::default()).unwrap(),
         }
     }
 }
 
-impl TemplateApp {
+impl PasswdgenEgui {
     /// Called once before the first frame.
-    pub fn new(cc: &eframe::CreationContext<'_>) -> Self {
+    pub fn new(_cc: &eframe::CreationContext<'_>) -> Self {
         // This is also where you can customize the look and feel of egui using
         // `cc.egui_ctx.set_visuals` and `cc.egui_ctx.set_fonts`.
 
         // Load previous app state (if any).
         // Note that you must enable the `persistence` feature for this to work.
-        if let Some(storage) = cc.storage {
-            return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
-        }
+        // if let Some(storage) = cc.storage {
+        // return eframe::get_value(storage, eframe::APP_KEY).unwrap_or_default();
+        // }
 
         Default::default()
     }
 }
 
-impl eframe::App for TemplateApp {
-    /// Called by the frame work to save state before shutdown.
-    fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        eframe::set_value(storage, eframe::APP_KEY, self);
-    }
-
-    /// Called each time the UI needs repainting, which may be many times per second.
+impl eframe::App for PasswdgenEgui {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Put your widgets into a `SidePanel`, `TopBottomPanel`, `CentralPanel`, `Window` or `Area`.
-        // For inspiration and more examples, go to https://emilk.github.io/egui
-
-        egui::TopBottomPanel::top("top_panel").show(ctx, |ui| {
-            // The top panel is often a good place for a menu bar:
-
-            egui::menu::bar(ui, |ui| {
-                // NOTE: no File->Quit on web pages!
-                let is_web = cfg!(target_arch = "wasm32");
-                if !is_web {
-                    ui.menu_button("File", |ui| {
-                        if ui.button("Quit").clicked() {
-                            ctx.send_viewport_cmd(egui::ViewportCommand::Close);
-                        }
-                    });
-                    ui.add_space(16.0);
-                }
-
-                egui::widgets::global_dark_light_mode_buttons(ui);
-            });
-        });
-
         egui::CentralPanel::default().show(ctx, |ui| {
-            // The central panel the region left after adding TopPanel's and SidePanel's
-            ui.heading("eframe template");
-
-            ui.horizontal(|ui| {
-                ui.label("Write something: ");
-                ui.text_edit_singleline(&mut self.label);
-            });
-
-            ui.add(egui::Slider::new(&mut self.value, 0.0..=10.0).text("value"));
-            if ui.button("Increment").clicked() {
-                self.value += 1.0;
-            }
-
-            ui.separator();
-
-            ui.add(egui::github_link_file!(
-                "https://github.com/emilk/eframe_template/blob/master/",
-                "Source code."
-            ));
-
-            ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                powered_by_egui_and_eframe(ui);
-                egui::warn_if_debug_build(ui);
-            });
+            ui.vertical_centered(|ui| {
+                ui.label(RichText::new("passwdgen").size(40.0));
+                ui.label(RichText::new("Your password is:").size(20.0));
+                ui.text_edit_singleline(&mut self.password);
+                if ui
+                    .add(egui::Button::new("Generate").min_size(Vec2::new(50.0, 25.0)))
+                    .clicked()
+                {
+                    self.password = generate_passsword(PasswdgenRequest::new(
+                        self.length,
+                        self.remove_uppercase,
+                        self.remove_lowercase,
+                        self.remove_numbers,
+                        self.add_special_characters,
+                        self.remove_similar,
+                    ))
+                    .unwrap_or(String::from(
+                        "Error: no characters to generate password from.",
+                    ))
+                }
+                ui.add(
+                    egui::widgets::DragValue::new(&mut self.length)
+                        .prefix("Length: ")
+                        .speed(0.05)
+                        .clamp_range(1..=128),
+                );
+                ui.checkbox(&mut self.remove_lowercase, "Remove lowercase characters");
+                ui.checkbox(&mut self.remove_uppercase, "Remove uppercase characters");
+                ui.checkbox(&mut self.remove_numbers, "Remove numbers");
+                ui.checkbox(&mut self.add_special_characters, "Add special characters");
+                ui.checkbox(&mut self.remove_similar, "Remove similar characters")
+            })
         });
     }
-}
-
-fn powered_by_egui_and_eframe(ui: &mut egui::Ui) {
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 0.0;
-        ui.label("Powered by ");
-        ui.hyperlink_to("egui", "https://github.com/emilk/egui");
-        ui.label(" and ");
-        ui.hyperlink_to(
-            "eframe",
-            "https://github.com/emilk/egui/tree/master/crates/eframe",
-        );
-        ui.label(".");
-    });
 }

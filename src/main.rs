@@ -8,19 +8,15 @@ fn main() -> eframe::Result<()> {
 
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([400.0, 300.0])
-            .with_min_inner_size([300.0, 220.0])
-            .with_icon(
-                // NOE: Adding an icon is optional
-                eframe::icon_data::from_png_bytes(&include_bytes!("../assets/icon-256.png")[..])
-                    .unwrap(),
-            ),
+            .with_inner_size([300.0, 300.0])
+            .with_min_inner_size([300.0, 300.0])
+            .with_title("passswdgen"),
         ..Default::default()
     };
     eframe::run_native(
         "eframe template",
         native_options,
-        Box::new(|cc| Box::new(eframe_template::TemplateApp::new(cc))),
+        Box::new(|cc| Box::new(passwdgen_egui::PasswdgenEgui::new(cc))),
     )
 }
 
@@ -37,7 +33,7 @@ fn main() {
             .start(
                 "the_canvas_id", // hardcode it
                 web_options,
-                Box::new(|cc| Box::new(eframe_template::TemplateApp::new(cc))),
+                Box::new(|cc| Box::new(passwdgen_egui::PasswdgenEgui::new(cc))),
             )
             .await
             .expect("failed to start eframe");
